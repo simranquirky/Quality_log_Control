@@ -54,17 +54,25 @@
             const form = document.getElementById('insertLogForm');
             const formData = new FormData(form);
 
-            // If 'metadata' field is empty, add an empty object to avoid KeyError
-            if (!formData.has('metadata[source]')) {
-                formData.append('metadata[source]', '');
-            }
+            // Convert FormData to plain object
+            const logData = {};
+            formData.forEach((value, key) => {
+                if (key === 'metadata[source]') {
+                    logData['metadata'] = { 'source': value };
+                } else {
+                    logData[key] = value;
+                }
+            });
+
+            // Convert timestamp to ISO string format
+            logData['timestamp'] = new Date(logData['timestamp']).toISOString();
 
             fetch('/api/log', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(Object.fromEntries(formData))
+                body: JSON.stringify(logData)
             })
             .then(response => {
                 if (!response.ok) {
