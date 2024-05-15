@@ -106,5 +106,7 @@ Open your browser and navigate to http://127.0.0.1:5000.
 
 ### Future design Modifications
 ![updated-log](enhanced-log)
+
+https://excalidraw.com/#json=qbN0jrX070uKx3zlSAnex,Lo8l0SlVgvt41wooMynEPg 
 ### Conclusion
 This project demonstrates a scalable and efficient system for log ingestion and querying, designed to handle high volumes of logs and provide quick search results. The implementation includes advanced features such as date range search, regex support, and combined filters, ensuring a comprehensive solution for quality log control.
