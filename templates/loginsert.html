@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Log Management Interface</h1>
+
+        <!-- Log Insertion Form -->
+        <div class="mt-5">
+            <h2>Insert Log</h2>
+            <form id="insertLogForm">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label for="logLevel">Log Level</label>
+                        <select class="form-control" id="logLevel" name="level">
+                            <option value="info">Info</option>
+                            <option value="error">Error</option>
+                            <option value="success">Success</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="logMessage">Log Message</label>
+                        <input type="text" class="form-control" id="logMessage" name="log_string">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="logTimestamp">Timestamp</label>
+                        <input type="datetime-local" class="form-control" id="logTimestamp" name="timestamp">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="logSource">Source</label>
+                        <input type="text" class="form-control" id="logSource" name="metadata[source]">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="insertLog()">Insert Log</button>
+            </form>
+        </div>
+
+        <!-- Curl Command Box -->
+        <div class="mt-5">
+            <h2>Curl Command</h2>
+            <div class="border p-3">
+                <pre><code id="curlCommand"></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function insertLog() {
+            const form = document.getElementById('insertLogForm');
+            const formData = new FormData(form);
+
+            // If 'metadata' field is empty, add an empty object to avoid KeyError
+            if (!formData.has('metadata[source]')) {
+                formData.append('metadata[source]', '');
+            }
+
+            fetch('/api/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data); // Log the response data
+                if (data.status === 'success') {
+                    alert('Log inserted successfully');
+                } else {
+                    alert('Error inserting log: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Function to update the curl command
+        function updateCurlCommand() {
+            const form = document.getElementById('insertLogForm');
+            const formData = new FormData(form);
+
+            let curlCommand = "curl -X POST -H 'Content-Type: application/json' -d '{";
+            formData.forEach((value, key) => {
+                if (key === 'metadata[source]') {
+                    curlCommand += `"metadata": {"source": "${value}"}`
+                } else {
+                    curlCommand += `"${key}": "${value}", `;
+                }
+            });
+            // Remove trailing comma and close the JSON object
+            curlCommand = curlCommand.replace(/, $/, '') + "}' http://127.0.0.1:5000/api/log";
+
+            document.getElementById('curlCommand').innerText = curlCommand;
+        }
+
+        // Update the curl command on page load
+        window.onload = updateCurlCommand;
+    </script>
+</body>
+</html>
